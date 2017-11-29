@@ -31,7 +31,7 @@ public class Main {
         iterateClustering(1000, positions);
 
 
-        playerData.stream().map(player -> player.getPosition()).forEach(System.out::println);
+        //playerData.stream().map(player -> player.getPosition()).forEach(System.out::println);
     }
 
     static void iterateClustering(int iteration, ArrayList<Cluster> clusters) {
@@ -54,24 +54,29 @@ public class Main {
         return Math.sqrt(sumOfSqrs);
     }
 
+
     static void hallOfFameCalcStats(ArrayList<Cluster> hof) {
         ArrayList<Double> entropies = new ArrayList<>(), purities = new ArrayList<>();
-
+        System.out.println("Hall of Fame Stats");
         for (Cluster c : hof) {
             ArrayList<Player> cur = c.getPlayers();
             double numHof = cur.stream().mapToInt(player -> player.getHof()).sum() * 1.0;
             double numOther = cur.size() - numHof;
+            System.out.println("hof: " + numHof + " other: " + numOther);
             double a = -numHof/cur.size() * Math.log(numHof/cur.size()) / Math.log(2);
             double b = -numOther/cur.size() * Math.log(numOther / cur.size()) / Math.log(2);
+            System.out.println(a+b);
             entropies.add((a + b) * cur.size() / playerData.size());
 
             double max = numHof > numOther ? numHof : numOther;
             purities.add(max / playerData.size());
+            System.out.println(max / cur.size());
         }
-
-        System.out.println("Hall of Fame Stats");
         System.out.println("Entropy: " + entropies.stream().mapToDouble(item -> item).sum());
         System.out.println("Purity: " + purities.stream().mapToDouble(item -> item).sum());
+    }
+
+    static void positionCalcStats(ArrayList<Cluster> positions) {
 
     }
 

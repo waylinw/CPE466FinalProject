@@ -43,7 +43,8 @@ public class Player{
    }
 
    public int getPosition() {
-      List<Integer> done=["1","2","3"]
+      ArrayList<Integer> done = new ArrayList<Integer>(Arrays.asList(0,1,2,3));
+      
       if (done.contains(position)){
          return Integer.parseInt(position);
       }
