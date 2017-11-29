@@ -1,8 +1,8 @@
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -18,9 +18,14 @@ public class Main {
         ArrayList<Cluster> hallOfFame = new ArrayList<>();
         hallOfFame.add(new Cluster(playerData.get(seeds[0])));
         hallOfFame.add(new Cluster(playerData.get(seeds[1])));
-        iterateClustering(100, hallOfFame);
+        iterateClustering(100, hallOfFame, Main::L2Distance);
         hallOfFameCalcStats(hallOfFame);
 
+        // Adding mike's distances
+//       ArrayList<Cluster> hallOfFame = new ArrayList<>();
+//       hallOfFame.add(new Cluster(playerData.get(seeds[0])));
+//       hallOfFame.add(new Cluster(playerData.get(seeds[1])));
+//       iterateClustering(100, hallOfFame, Main::L2Distance);
 
         // Clustering on positions
         seeds = new Random().ints(0, playerData.size()).distinct().limit(7).toArray();
@@ -28,17 +33,17 @@ public class Main {
         for (int i = 0; i < seeds.length; i++) {
             positions.add(new Cluster(playerData.get(seeds[i])));
         }
-        iterateClustering(1000, positions);
-
+        iterateClustering(1000, positions, Main::L2Distance);
+        positionCalcStats(positions);
 
         //playerData.stream().map(player -> player.getPosition()).forEach(System.out::println);
     }
 
-    static void iterateClustering(int iteration, ArrayList<Cluster> clusters) {
+    static void iterateClustering(int iteration, ArrayList<Cluster> clusters, BiFunction<Cluster, Player, Double> distanceFunction) {
         for (int i = 0; i < iteration; i++) {
             clusters.stream().forEach(cluster -> cluster.resetPoints());
             for (Player p: playerData) {
-                double [] distances = clusters.stream().mapToDouble(cluster -> L2Distance(cluster, p)).toArray();
+                double [] distances = clusters.stream().mapToDouble(cluster -> distanceFunction.apply(cluster, p)).toArray();
                 clusters.get(IntStream.range(0, clusters.size()).reduce((a, b) -> distances[a] < distances[b] ? a : b).getAsInt()).addPlayer(p);
             }
             clusters.stream().forEach(cluster -> cluster.computeCentroid());
@@ -53,6 +58,10 @@ public class Main {
         }
         return Math.sqrt(sumOfSqrs);
     }
+
+//    static double MikeDistance(Cluster c, Player p) {
+//
+//    }
 
 
     static void hallOfFameCalcStats(ArrayList<Cluster> hof) {
@@ -77,7 +86,34 @@ public class Main {
     }
 
     static void positionCalcStats(ArrayList<Cluster> positions) {
+       ArrayList<Double> entropies = new ArrayList<>(), purities = new ArrayList<>();
+       System.out.println("Position stats");
+       for (Cluster c: positions) {
+          System.out.println("Cluster info");
+          ArrayList<Player> cur = c.getPlayers();
+          HashMap<Integer, Integer> positionCount = new HashMap<>();
+          cur.stream().mapToInt(player -> player.getPosition()).forEach(pos -> {
+             int count = 1;
+             if (positionCount.containsKey(pos)) {
+                count = positionCount.get(pos) + 1;
+             }
+             positionCount.put(pos, count);
+          });
+          positionCount.entrySet().stream().forEach(ent -> System.out.println("Position: " + ent.getKey() + " Count: " + ent.getValue()));
 
+          double[] rawEnts = positionCount.entrySet().stream().mapToDouble(ent ->
+                  -1.0 * ent.getValue() / cur.size() *
+                          Math.log(1.0 * ent.getValue() / cur.size()) / Math.log(2)).toArray();
+          System.out.println("ent: " + Arrays.stream(rawEnts).sum());
+          entropies.add(Arrays.stream(rawEnts).sum() * cur.size() / playerData.size());
+
+          double max = positionCount.values().stream().mapToInt(ent->ent).max().getAsInt();
+          System.out.println("pur: " + max / cur.size());
+          purities.add(max / playerData.size());
+       }
+
+       System.out.println("Entropy: " + entropies.stream().mapToDouble(item -> item).sum());
+       System.out.println("Purity: " + purities.stream().mapToDouble(item -> item).sum());
     }
 
     static ArrayList<Player> readInput(String path) {
