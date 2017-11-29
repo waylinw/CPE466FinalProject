@@ -43,6 +43,15 @@ public class Player{
    }
 
    public int getPosition() {
-      return 0;
+      List<Integer> done=["1","2","3"]
+      if (done.contains(position)){
+         return Integer.parseInt(position);
+      }
+      HashMap<String,Integer> correspond=new HashMap<String,Integer>();
+      correspond.put("S",6);
+      correspond.put("O",7);
+      correspond.put("C",5);
+      correspond.put("D",8);
+      return correspond.get(position);
    }
 }
