@@ -7,6 +7,10 @@ public class Player{
    private int HOF;
    private String position;
    private ArrayList<Double> stats;
+   private ArrayList<Double> normalStats=new ArrayList<Double>();
+   public void addNormal(double addVal){
+      normalStats.add(addVal);
+   }
    public Player(String fileLine){
       String[] split = fileLine.split("\t");
       this.id = Integer.parseInt(split[0].replace("\"", ""));
