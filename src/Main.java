@@ -1,3 +1,4 @@
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,6 +13,7 @@ public class Main {
 
     public static void main(String[] args) {
         playerData = readInput("data.txt");
+        normalize(playerData);
 
         // Clustering on Hall of Fame, only need 2 clusters. Yes or No, so randomly pick 2 as starting
         int[] seeds = new Random().ints(0, playerData.size()).distinct().limit(2).toArray();
@@ -20,16 +22,21 @@ public class Main {
         hallOfFame.add(new Cluster(playerData.get(seeds[1])));
         iterateClustering(100, hallOfFame, Main::L2Distance);
         hallOfFameCalcStats(hallOfFame);
+        toCSV(hallOfFame, "hofL2Dist.csv");
 
-       hallOfFame = new ArrayList<>();
-       hallOfFame.add(new Cluster(playerData.get(seeds[0])));
-       hallOfFame.add(new Cluster(playerData.get(seeds[1])));
-       iterateClustering(100, hallOfFame, Main::L1Distance);
+        hallOfFame = new ArrayList<>();
+        hallOfFame.add(new Cluster(playerData.get(seeds[0])));
+        hallOfFame.add(new Cluster(playerData.get(seeds[1])));
+        iterateClustering(100, hallOfFame, Main::L1Distance);
+        hallOfFameCalcStats(hallOfFame);
+        toCSV(hallOfFame, "hofL1Dist.csv");
 
-       hallOfFame = new ArrayList<>();
-       hallOfFame.add(new Cluster(playerData.get(seeds[0])));
-       hallOfFame.add(new Cluster(playerData.get(seeds[1])));
-       iterateClustering(100, hallOfFame, Main::ChebychevDistance);
+        hallOfFame = new ArrayList<>();
+        hallOfFame.add(new Cluster(playerData.get(seeds[0])));
+        hallOfFame.add(new Cluster(playerData.get(seeds[1])));
+        iterateClustering(100, hallOfFame, Main::ChebychevDistance);
+        hallOfFameCalcStats(hallOfFame);
+        toCSV(hallOfFame, "hofChebychev.csv");
         
         // Clustering on positions
         seeds = new Random().ints(0, playerData.size()).distinct().limit(7).toArray();
@@ -39,24 +46,24 @@ public class Main {
         }
         iterateClustering(1000, positions, Main::L2Distance);
         positionCalcStats(positions);
-        
-         seeds = new Random().ints(0, playerData.size()).distinct().limit(7).toArray();
+        toCSV(hallOfFame, "posL2Dist.csv");
+
         positions = new ArrayList<>();
         for (int i = 0; i < seeds.length; i++) {
             positions.add(new Cluster(playerData.get(seeds[i])));
         }
         iterateClustering(1000, positions, Main::L1Distance);
         positionCalcStats(positions);
-        
-         seeds = new Random().ints(0, playerData.size()).distinct().limit(7).toArray();
+        toCSV(hallOfFame, "posL1Dist.csv");
+
         positions = new ArrayList<>();
         for (int i = 0; i < seeds.length; i++) {
             positions.add(new Cluster(playerData.get(seeds[i])));
         }
         iterateClustering(1000, positions, Main::ChebychevDistance);
         positionCalcStats(positions);
+        toCSV(hallOfFame, "posChebychev.csv");
 
-        //playerData.stream().map(player -> player.getPosition()).forEach(System.out::println);
     }
 
     static void iterateClustering(int iteration, ArrayList<Cluster> clusters, BiFunction<Cluster, Player, Double> distanceFunction) {
@@ -167,8 +174,9 @@ public class Main {
 
         return retVal;
     }
-    public void toCSV(ArrayList<Cluster> clusters,String fileName){
-      try{
+
+    static void toCSV(ArrayList<Cluster> clusters,String fileName){
+      try {
          PrintWriter writer = new PrintWriter(fileName, "UTF-8");
          writer.println("Name,Seasons,Games,AB,Runs,Hits,Doubles,Triples,HR,RBI,BB,SO,BA,OBP,SLG,AdjPro,BatRun,AdjBatRun,RC,SB,CS,SBRuns,FieldAverage,FieldRuns,TotalPyrRate,Position,HOFStatus,Cluster");
          for (int i=0;i<clusters.size(); i++){
@@ -184,20 +192,35 @@ public class Main {
          System.out.println("Error connecting");
       }
    }
+
      public static void normalize(ArrayList<Player> players){
       int playersSize=players.get(0).getNumberOfStats();
       for (int z=0; z<playersSize; z++){
          ArrayList<Double> attribute=new ArrayList<Double>();
          for (int y=0; y<players.size(); y++){
             Player player=players.get(y);
-            attribute.add(player.getStat(z));
+            attribute.add(player.getOldStat(z));
          }
+
          Double max=Collections.max(attribute);
          Double min = Collections.min(attribute);
+         //double std = stddev(attribute);
+         //double mean = attribute.stream().mapToDouble(i -> i).sum() * 1.0 / attribute.size();
+
          for (int x=0; x<players.size();x++){
             Player player=players.get(x);
-            player.addNormal(1.0*(1.0*player.getStat(z)-min)/(1.0*max-min));
+            //player.addNormal((player.getOldStat(z) - mean) / std);
+            player.addNormal(1.0*(1.0*player.getOldStat(z)-min)/(1.0*max-min));
          }
       }
    }
+
+//   static double stddev (ArrayList<Double> a){
+//      double sum = 0;
+//      double mean = a.stream().mapToDouble(i -> i).sum() * 1.0 / a.size();
+//
+//      for (Double i : a)
+//         sum += Math.pow((i - mean), 2);
+//      return Math.sqrt( sum / ( a.size() - 1 ) ); // sample
+//   }
 }

@@ -25,18 +25,18 @@ public class Cluster{
 
       this.center = new Player(attributes);
    }
-   public void computeMedianCentroid(){
-      ArrayList<Double> attributes=new ArrayList<Double>();
-      for (int column=0; column<center.getNumberOfStats(); column++){
-         ArrayList<Double> values=new ArrayList<Double>();
-         for (Player p: players){
-            values.add(p.getStat(column));
-         }
-         Collections.sort(values);
-         attributes.add(values.get(values.size()/2));
-      }
-      this.center=new Player(attributes);
-   }
+//   public void computeMedianCentroid(){
+//      ArrayList<Double> attributes=new ArrayList<Double>();
+//      for (int column=0; column<center.getNumberOfStats(); column++){
+//         ArrayList<Double> values=new ArrayList<Double>();
+//         for (Player p: players){
+//            values.add(p.getStat(column));
+//         }
+//         Collections.sort(values);
+//         attributes.add(values.get(values.size()/2));
+//      }
+//      this.center=new Player(attributes);
+//   }
 
    public Player getCenter() {
       return center;

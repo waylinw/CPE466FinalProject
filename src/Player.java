@@ -31,11 +31,16 @@ public class Player{
       stats.add(Double.parseDouble(split[26]));
    }
    public Player(ArrayList<Double> center){
-      this.stats=center;
+      this.stats = center;
+      this.normalStats = center;
+   }
+
+   public double getOldStat(int index) {
+      return stats.get(index);
    }
 
    public double getStat(int index){
-      return stats.get(index);
+      return normalStats.get(index);
    }
 
    public int getNumberOfStats(){
