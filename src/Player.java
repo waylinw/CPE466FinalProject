@@ -55,4 +55,9 @@ public class Player{
       correspond.put("D",8);
       return correspond.get(position);
    }
+   public String toString(){
+      String returnVal="";
+      returnVal+=name+", "+stats.toString().substring(1,stats.toString().length()-1)+", "+position+", "+HOF;
+      return returnVal;
+   }
 }
