@@ -21,12 +21,16 @@ public class Main {
         iterateClustering(100, hallOfFame, Main::L2Distance);
         hallOfFameCalcStats(hallOfFame);
 
-        // Adding mike's distances
-//       ArrayList<Cluster> hallOfFame = new ArrayList<>();
-//       hallOfFame.add(new Cluster(playerData.get(seeds[0])));
-//       hallOfFame.add(new Cluster(playerData.get(seeds[1])));
-//       iterateClustering(100, hallOfFame, Main::L2Distance);
+       hallOfFame = new ArrayList<>();
+       hallOfFame.add(new Cluster(playerData.get(seeds[0])));
+       hallOfFame.add(new Cluster(playerData.get(seeds[1])));
+       iterateClustering(100, hallOfFame, Main::L1Distance);
 
+       hallOfFame = new ArrayList<>();
+       hallOfFame.add(new Cluster(playerData.get(seeds[0])));
+       hallOfFame.add(new Cluster(playerData.get(seeds[1])));
+       iterateClustering(100, hallOfFame, Main::ChebychevDistance);
+        
         // Clustering on positions
         seeds = new Random().ints(0, playerData.size()).distinct().limit(7).toArray();
         ArrayList<Cluster> positions = new ArrayList<>();
@@ -34,6 +38,22 @@ public class Main {
             positions.add(new Cluster(playerData.get(seeds[i])));
         }
         iterateClustering(1000, positions, Main::L2Distance);
+        positionCalcStats(positions);
+        
+         seeds = new Random().ints(0, playerData.size()).distinct().limit(7).toArray();
+        positions = new ArrayList<>();
+        for (int i = 0; i < seeds.length; i++) {
+            positions.add(new Cluster(playerData.get(seeds[i])));
+        }
+        iterateClustering(1000, positions, Main::L1Distance);
+        positionCalcStats(positions);
+        
+         seeds = new Random().ints(0, playerData.size()).distinct().limit(7).toArray();
+        positions = new ArrayList<>();
+        for (int i = 0; i < seeds.length; i++) {
+            positions.add(new Cluster(playerData.get(seeds[i])));
+        }
+        iterateClustering(1000, positions, Main::ChebychevDistance);
         positionCalcStats(positions);
 
         //playerData.stream().map(player -> player.getPosition()).forEach(System.out::println);
@@ -59,9 +79,25 @@ public class Main {
         return Math.sqrt(sumOfSqrs);
     }
 
-//    static double MikeDistance(Cluster c, Player p) {
-//
-//    }
+    static double L1Distance(Cluster c, Player p) {
+      double sumOfAbs=0.0;
+      Player center=c.getCenter();
+      for (int i = 0; i < p.getNumberOfStats(); i++) {
+         sumOfAbs += Math.abs(center.getStat(i) - p.getStat(i));
+      }
+      return sumOfAbs;
+    }
+    static double ChebychevDistance(Cluster c, Player p){
+      double max=0.0;
+      Player center=c.getCenter();
+      for (int i = 0; i < p.getNumberOfStats(); i++) {
+         double current=Math.abs(center.getStat(i) - p.getStat(i));
+         if (current>max){
+            max=current;
+         }
+      }
+      return max;
+    }
 
 
     static void hallOfFameCalcStats(ArrayList<Cluster> hof) {
@@ -131,4 +167,21 @@ public class Main {
 
         return retVal;
     }
+    public void toCSV(ArrayList<Cluster> clusters,String fileName){
+      try{
+         PrintWriter writer = new PrintWriter(fileName, "UTF-8");
+         writer.println("Name,Seasons,Games,AB,Runs,Hits,Doubles,Triples,HR,RBI,BB,SO,BA,OBP,SLG,AdjPro,BatRun,AdjBatRun,RC,SB,CS,SBRuns,FieldAverage,FieldRuns,TotalPyrRate,Position,HOFStatus,Cluster");
+         for (int i=0;i<clusters.size(); i++){
+            Cluster current=clusters.get(i);
+            ArrayList<Player> players=current.getPlayers();
+            for (int j=0; j<players.size(); j++){
+               writer.println(players.get(j).toString()+", "+i);
+            }
+         }
+         writer.close();
+      }
+      catch(Exception e){
+         System.out.println("Error connecting");
+      }
+   }
 }
