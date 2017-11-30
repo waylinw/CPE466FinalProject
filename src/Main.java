@@ -184,4 +184,20 @@ public class Main {
          System.out.println("Error connecting");
       }
    }
+     public static void normalize(ArrayList<Player> players){
+      int playersSize=players.get(0).getNumberOfStats();
+      for (int z=0; z<playersSize; z++){
+         ArrayList<Double> attribute=new ArrayList<Double>();
+         for (int y=0; y<players.size(); y++){
+            Player player=players.get(y);
+            attribute.add(player.getStat(z));
+         }
+         Double max=Collections.max(attribute);
+         Double min = Collections.min(attribute);
+         for (int x=0; x<players.size();x++){
+            Player player=players.get(x);
+            player.addNormal(1.0*(1.0*player.getStat(z)-min)/(1.0*max-min));
+         }
+      }
+   }
 }
